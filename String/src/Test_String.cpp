@@ -143,11 +143,41 @@ TEST(StringEraseTest, EraseOutOfBound) {
     EXPECT_STREQ(s2.data(), s1.data());
 }
 
-TEST(StringAssignTest, Assign) {
+TEST(StringAssignTest, AssignSmallToSmall) {
+	String s1("Te");
+	String s2("st");
+	std::string s3("Te");
+	std::string s4("st");
+	s1.assign(s2);
+	s3.assign(s4);
+    EXPECT_STREQ(s3.data(), s1.data());
+}
+
+TEST(StringAssignTest, AssignLargeToLarge) {
 	String s1("Test");
 	String s2("123");
 	std::string s3("Test");
 	std::string s4("123");
+	s1.assign(s2);
+	s3.assign(s4);
+    EXPECT_STREQ(s3.data(), s1.data());
+}
+
+TEST(StringAssignTest, AssignSmallToLarge) {
+	String s1("Test");
+	String s2("12");
+	std::string s3("Test");
+	std::string s4("12");
+	s1.assign(s2);
+	s3.assign(s4);
+    EXPECT_STREQ(s3.data(), s1.data());
+}
+
+TEST(StringAssignTest, AssignLargeToSmall) {
+	String s1("12");
+	String s2("Test");
+	std::string s3("12");
+	std::string s4("Test");
 	s1.assign(s2);
 	s3.assign(s4);
     EXPECT_STREQ(s3.data(), s1.data());
