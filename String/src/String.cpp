@@ -61,21 +61,18 @@ String::String (const String& str)
 	}
 	else if (str.category() == large)
 	{
-		std::cout << "Large Category." << std::endl;
-
 		_cat = large;
 		_large._size = str._large._size;
 		_large._data = new char[_large._size];
 		memcpy(_large._data, str._large._data, _large._size);
 		_smallSize = 0;
+		_large._capacity = _large._size;
 	}
 }
 
 // Constructor which takes a const char*
 String::String(const char *s)
 {
-	// TODO Remove
-	std::cout << "const char* constructor called." << std::endl;
 	size_t len = StringHelper::getLength(s);
 	if(len <= SMALL_SIZE)
 	{
@@ -93,6 +90,7 @@ String::String(const char *s)
 		_large._size = StringHelper::getLength(s);
 		_large._data = new char[_large._size+1];
 		memcpy(_large._data, s, _large._size);
+		_large._capacity = _large._size;
 		WriteNull();
 	}
 }
@@ -163,6 +161,7 @@ void String::clear()
 	{
 		memset(_large._data, 0, sizeof(*_large._data));
 		_large._size = 0;
+		_large._capacity = 0;
 	}
 }
 
@@ -278,11 +277,9 @@ String& String::append (const String& str)
 			_large._data[lhsOldSize+i] = str._large._data[i];
 			++i;
 		}
-		std::cout << "PostAppend: " << _large._data << std::endl;
 	}
 
 	return *this;
-
 }
 
 // Assign content to string
@@ -304,6 +301,7 @@ String& String::assign(const String& str)
 	{
 		char * temp = new char[str._large._size+1];
 		_large._size = str._large._size;
+		_large._capacity = str._large._capacity;
 		_cat = large;
 		int i = 0;
 		while(i < str._large._size)
@@ -346,7 +344,6 @@ String& String::erase(size_t pos, size_t len)
 		while(i < newLen)
 		{
 			_small[i] = temp[i];
-			std::cout << "Copying " << temp[i] << std::endl;
 			++i;
 		}
 
@@ -360,8 +357,6 @@ String& String::erase(size_t pos, size_t len)
 		if(newLen <= SMALL_SIZE)
 		{
 			// Erasing from large so it becomes small
-			std::cout << "Erasing large to small" << std::endl;
-
 			_smallSize = newLen+1;
 			_cat = small;
 		}
@@ -528,7 +523,6 @@ String& String::insert(size_t pos, const String str)
 		else if(category() == large && str.category() == large)
 		{
 			// large, large - result is large
-			std::cout << "LargeLarge to Large" << std::endl;
 			int i = 0;
 
 			// Copy until we reach 'pos'
@@ -543,11 +537,9 @@ String& String::insert(size_t pos, const String str)
 
 			// Copy 'len' characters starting at 'pos'
 			int j = 0;
-			std::cout << str._large._size << std::endl;
 			while(j < str._large._size)
 			{
 				temp[i] = str._large._data[j];
-				std::cout << "Copying " << i << j << " | "<< temp[i] << std::endl;
 				++j;
 				++i;
 			}
@@ -556,12 +548,9 @@ String& String::insert(size_t pos, const String str)
 			while( i < newLen)
 			{
 				temp[i] = _large._data[k];
-				std::cout << "Copying " << temp[i] << std::endl;
 				++i;
 				++k;
 			}
-			std::cout << "Final Temp " << data();
-
 		}
 
 		// Re-assign instance variables
@@ -588,25 +577,36 @@ void String::resize(size_t n)
 	}
 	else
 	{
-		char * temp = new char[n+1];
 		if(category() == large)
 		{
-			memcpy(temp, _large._data, _large._size);
-			temp[_large._size] = '\0';
+			if((n+1) > _large._capacity)
+			{
+				char * temp = new char[n+1];
+				memcpy(temp, _large._data, _large._size);
+				_large._data = temp;
+				_large._size = n;
+				_large._capacity = _large._size;
+				_cat = large;
+				WriteNull();
+			}
 		}
 		else if(category() == small)
 		{
+			char * temp = new char[n+1];
 			for(int i = 0; i<=_smallSize; ++i)
 			{
 				temp[i] = _small[i];
 			}
+
+			_large._data = temp;
+			_large._size = n;
+			_large._capacity = _large._size;
+			_cat = large;
+			WriteNull();
+
 			_smallSize = 0;
 			_small[0] = '\0';
 		}
-		_large._data = temp;
-		_large._size = n;
-		_cat = large;
-		WriteNull();
 	}
 }
 
@@ -746,7 +746,6 @@ String& String::replace(size_t pos, size_t len, const String str)
 		else if(category() == large && str.category() == small)
 		{
 			// large, small - result is large
-			std::cout << "LargeSmall to Large" << std::endl;
 			int i = 0;
 
 			// Copy until we reach 'pos'
@@ -779,7 +778,6 @@ String& String::replace(size_t pos, size_t len, const String str)
 		else if(category() == large && str.category() == large)
 		{
 			// large, large - result is large
-			std::cout << "LargeLarge to Large" << std::endl;
 			int i = 0;
 
 			// Copy until we reach 'pos'
@@ -794,11 +792,9 @@ String& String::replace(size_t pos, size_t len, const String str)
 
 			// Copy 'len' characters starting at 'pos'
 			int j = 0;
-			std::cout << str._large._size << std::endl;
 			while((i < newLen) && (j < str._large._size))
 			{
 				temp[i] = str._large._data[j];
-				std::cout << "Copying " << i << j << " | "<< temp[i] << std::endl;
 				++j;
 				++i;
 			}
@@ -807,11 +803,9 @@ String& String::replace(size_t pos, size_t len, const String str)
 			while( i < newLen)
 			{
 				temp[i] = _large._data[k];
-				std::cout << "Copying " << temp[i] << std::endl;
 				++i;
 				++k;
 			}
-			std::cout << "Final Temp " << data();
 		}
 
 		// Re-assign instance variables
@@ -861,7 +855,6 @@ char& String::operator[] (size_t i)
 	 return ret;
 }
 
-
 // Returns a StringIterator to the beginning of the string
 iterator String::begin()
 {
@@ -872,6 +865,64 @@ iterator String::begin()
 iterator String::end()
 {
 	return iterator(this, (size()));
+}
+
+// Reserve the capacity of the string
+void String::reserve(size_t s = 0)
+{
+	if(category() == small && (_smallSize + s) > SMALL_SIZE)
+	{
+		// Small To Large
+		char * temp = new char[_smallSize + s];
+
+		int i = 0;
+		while(_small[i])
+		{
+			temp[i] = _small[i];
+			++i;
+		}
+
+		_large._size = _smallSize;
+		_large._capacity = s;
+		_large._data = temp;
+		_cat = large;
+		WriteNull();
+
+	}
+	else if(category() == large)
+	{
+		// Large To Large
+		char * temp = new char[_large._size + s];
+
+		int i = 0;
+		while(_large._data[i])
+		{
+			temp[i] = _large._data[i];
+			++i;
+		}
+
+		_large._capacity = s;
+		_large._data = temp;
+		_cat = large;
+		WriteNull();
+	}
+}
+
+// Return size of allocated storage
+size_t String::capacity() const
+{
+	size_t ret;
+
+	if(category() == small)
+	{
+		ret = _smallSize;
+	}
+	else if(category() == large)
+	{
+		ret = _large._capacity;
+	}
+
+	return ret;
 }
 
 

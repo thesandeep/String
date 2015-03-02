@@ -301,12 +301,20 @@ TEST(StringInsertTest, InsertAt0) {
     EXPECT_STREQ(s3.data(), s1.data());
 }
 
-//TEST(StringMemberFunction, Max_Size) {
-//	String s1("Test");
-//	std::string s2("Test");
-//    EXPECT_EQ(s2.max_size(), s1.max_size());
-//}
-//
+TEST(StringMemberFunction, ReserveSmallToLarge) {
+	String s1("Te");
+	s1.reserve(10);
+    EXPECT_EQ(2, s1.size());
+    EXPECT_EQ(10, s1.capacity());
+}
+
+TEST(StringMemberFunction, ReserveLargeToLarge) {
+	String s1("Test");
+	s1.reserve(10);
+    EXPECT_EQ(4, s1.size());
+    EXPECT_EQ(10, s1.capacity());
+}
+
 TEST(StringAccessorFunction, At0Small) {
 	String s1("Te");
 	std::string s2("Te");

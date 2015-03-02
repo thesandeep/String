@@ -114,6 +114,9 @@ public:
 	// Return size of allocated storage
     size_t capacity() const;
 
+	// Request a change in capacity
+	void reserve(size_t s);
+
 	// Clear the data
 	void clear();
 
